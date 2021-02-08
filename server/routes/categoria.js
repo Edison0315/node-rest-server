@@ -8,7 +8,13 @@ let Categoria = require('../models/categoria')
 
 app.get('/categorias', verificaToken, (req, res) => {
     
-    Categoria.find({}).exec((err, categoriasDB) => {
+    Categoria.find({})
+             .sort('nombre')
+             .populate('usuario', 'nombre email')
+            //  Si la tabla tiene mas schemas relacionados
+            // solo se debe duplicar esta linea y especificar los nombres
+            //  .populate('usuario', 'nombre email')
+             .exec((err, categoriasDB) => {
 
         if(err){
             return res.status(500).json({
@@ -67,6 +73,13 @@ app.post('/categoria', verificaToken, (req, res) => {
             });
         }
 
+        if(!categoriaDB){
+            return res.status(400).json({
+                ok: false,
+                err
+            });
+        }
+
         return res.status(201).json({
             ok: true,
             categoria: categoriaDB
@@ -112,7 +125,7 @@ app.delete('/categoria/:id', verificaToken, (req, res) => {
     Categoria.findByIdAndRemove(id, (err, categoriaBorrada) => {
 
         if(err){
-            return res.status(400).json({
+            return res.status(500).json({
                 ok: false,
                 err
             });
